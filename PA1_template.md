@@ -20,7 +20,8 @@ order to reproduce the analysis and fulfill submission requirements.
 The following code chunk will detect and install missing packages, as well as
 load required packages for the present analysis.
 
-```{r echo = TRUE, results = "hide", message = FALSE}
+
+```r
 if(!require(readr)){install.packages("readr")}
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(ggplot2)){install.packages("ggplot2")}
@@ -35,8 +36,8 @@ library(ggplot2)
 The following creates a directory to unzip, store, and read in the 
 `activity.csv` dataset. The results are cached. 
 
-```{r echo = TRUE, results = "hide", message = FALSE, cache = TRUE}
 
+```r
 url <- "https://github.com/jamisoncrawford/RepData_PeerAssessment1/raw/master/activity.zip"
 path <- "./activity_data"
 file <- "./activity.zip"
@@ -45,7 +46,6 @@ if(!file.exists(path)){dir.create(path)}; setwd(path)
 download.file(url, file); unzip(file)
 activity <- read_csv("activity.csv")
 rm(url, path, file)
-
 ```
 
 ## What is mean total number of steps taken per day?
@@ -54,8 +54,8 @@ The following histogram describes the count of `date` values during which the
 subject took a certain number of `steps`, in 250-step intervals. The mean and 
 median of total daily `steps` are subsequently reported.
 
-```{r echo = TRUE, warning = FALSE}
 
+```r
 daily <- activity %>%
     group_by(date) %>%
     summarize(total = sum(steps))
@@ -67,12 +67,20 @@ ggplot(daily, aes(total)) +
     xlab("Total Steps per Day") +
     ylab("Days") +
     theme_classic()
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 daily %>% 
     summarize(`Mean Total Steps` = mean(total, na.rm = TRUE),
               `Median Total Steps` = median(total, na.rm = TRUE)) %>%
     as.data.frame
+```
 
+```
+##   Mean Total Steps Median Total Steps
+## 1         10766.19              10765
 ```
 
 ## What is the average daily activity pattern?
@@ -81,8 +89,8 @@ The following time series graphic depicts the average number of steps for each
 `interval` across all `date` values. The subsequent output reports the 
 `interval` with the maximum daily `steps`. 
 
-```{r echo = TRUE}
 
+```r
 activity %>%
     group_by(interval) %>%
     summarize(mean = mean(steps, na.rm = TRUE)) %>%
@@ -94,7 +102,11 @@ activity %>%
     ylab("Average Steps") +
     xlab("Time Interval") +
     theme_classic()
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
 daily <- activity %>%
     group_by(interval) %>%
     summarize(mean = mean(steps, na.rm = TRUE))
@@ -102,7 +114,11 @@ daily <- activity %>%
 daily %>% 
     summarize(`Interval with Max Steps` = daily$interval[which.max(mean)]) %>% 
     as.data.frame
+```
 
+```
+##   Interval with Max Steps
+## 1                     835
 ```
 
 ## Imputing missing values
@@ -114,10 +130,16 @@ contains the original `activity.csv` data with `NA` values imputed. The
 subsequent histogram depicts the total `steps` for each `date` using the new
 `imputed` dataset and, lastly, reports mean and median total `steps` per `date`.
 
-```{r echo = TRUE, warning = FALSE}
 
+```r
 paste("There are", sum(is.na(activity$steps)), "missing values.", sep = " ")
+```
 
+```
+## [1] "There are 2304 missing values."
+```
+
+```r
 imputation <- activity %>%
     group_by(interval) %>%
     summarize(interval_mean = mean(steps, na.rm = TRUE))
@@ -138,7 +160,14 @@ daily %>%
     summarize(`Mean Total Steps (Imputed)` = mean(total, na.rm = TRUE),
               `Median Total Steps (Imputed)` = median(total, na.rm = TRUE)) %>%
     as.data.frame
+```
 
+```
+##   Mean Total Steps (Imputed) Median Total Steps (Imputed)
+## 1                   10765.64                        10762
+```
+
+```r
 ggplot(daily, aes(total)) + 
     geom_histogram(binwidth = 250, fill = "skyblue") +
     ggtitle(label = "Number of days by total steps", 
@@ -147,8 +176,9 @@ ggplot(daily, aes(total)) +
     ylab("Days") +
     scale_y_discrete(limits = c(0:9)) +
     theme_classic()
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 **Conclusions:** One can see that imputed missing values in `activity.csv` 
 has had a negligible impact on `Mean Total Steps` and `Median Total Steps`. The 
@@ -161,8 +191,8 @@ and `Weekend`. The latticed time series below depicts the difference in mean
 `steps` values between `Weekday` and `Weekend`, determined with the average
 `steps` value over all `date` values and by `interval`. 
 
-```{r echo = TRUE, warning = FALSE}
 
+```r
 imputed$day <- weekdays(imputed$date)
 weekdays <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 imputed$day <- c('Weekend', 'Weekday')[(imputed$day %in% weekdays) + 1L]
@@ -179,5 +209,6 @@ ggplot(intervals, aes(x = interval, y = steps)) +
     xlab("Time Interval") +
     theme_classic() +
     facet_wrap(~day)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
